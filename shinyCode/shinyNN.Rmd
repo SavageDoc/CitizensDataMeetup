@@ -1,0 +1,40 @@
+---
+title: "Implementation of Neural Network"
+author: "Craig O. Savage"
+date: "January 24, 2017"
+output: 
+  ioslides_presentation: 
+    highlight: espresso
+    transition: faster
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache.lazy=FALSE, cache.rebuild=TRUE)
+```
+
+## Executive Summary
+
+- Discussion of implementation of Neural Network or Linear Model was had on `r Sys.time()`
+- Facilitated by `r Sys.info()['user']`
+- Decision reached to implement the Neural Network for reasons including:
+```{r reasons, comment=''}
+print( docRV$reasons  )
+```
+
+## Next Steps
+
+- Code and technical documentation to be delivered to validation
+- Support for governance committees to be arranged.
+
+# Supporting information
+
+## Test Results
+```{r testPlot}
+plotsRV$testLine
+```
+
+## Cross-Validation Results
+```{r cvPlot}
+plotsRV$cvBox
+```
+

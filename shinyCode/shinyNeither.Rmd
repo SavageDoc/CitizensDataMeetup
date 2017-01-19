@@ -1,0 +1,39 @@
+---
+title: "Implementation of Neither Neural Network nor Linear Model"
+author: "Craig O. Savage"
+date: "January 24, 2017"
+output: 
+  ioslides_presentation: 
+    highlight: espresso
+    transition: faster
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache.lazy=FALSE, cache.rebuild=TRUE)
+```
+
+## Executive Summary
+
+- Discussion of implementation of Neural Network or Linear Model was had on `r Sys.time()`
+- Facilitated by `r Sys.info()['user']`
+- Decision reached to implement *neither* for reasons including:
+```{r reasons, comment=''}
+print( docRV$reasons )
+```
+
+## Next Steps
+
+- Re-assess project scope, data sources, deliverables, timelines and budget
+- Ensure documentation is prepared for project suspension
+
+# Supporting information
+
+## Test Results
+```{r testPlot}
+plotsRV$testLine
+```
+
+## Cross-Validation Results
+```{r cvPlot}
+plotsRV$cvBox
+```

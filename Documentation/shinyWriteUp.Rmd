@@ -1,0 +1,95 @@
+---
+title: 'Citizens Data Meetup: High-level documentation'
+author: "Craig (Doc) Savage"
+output:
+  html_document: 
+    keep_md: yes
+    theme: null
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache.lazy=FALSE, cache.rebuild=TRUE)
+```
+
+```{r loadPackages, echo=FALSE}
+library( MASS )
+library( neuralnet )
+library( ggplot2 )
+library( RColorBrewer )
+```
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. This Notebook has been prepared as an example of informal documentation for the Citizens Data Meetup group presentation on 24 Jan in Melbourne, Australia. 
+
+The idea for this project and demonstration was a nice [blog entry](https://datascienceplus.com/fitting-neural-network-in-r/) on fitting a neural network with the neuralnet package by Michy Alice.
+
+The problem statement is the same -- compare the performance of a neural network to a linear regression model using the Boston data set in the MASS package. The Boston data set contains `r nrow(Boston)` entries with `r ncol( Boston )` variables. As in the above blog article, I've chosen to model the median house price as a function of the other variables.
+
+```{r dataDef, echo=TRUE}
+myData <- Boston
+yName <- 'medv'
+paste( 'xNames <-', paste( input$xNames, collapse=', ' ) )
+```
+
+I've organised most of the technical details and arranged them into functions in a separate file, *cdmFunctions.R*. Some of them are rather involved, and I'd like to focus on the high-level process here.
+
+```{r sourceFunctions, echo=FALSE}
+source( '../baseCode/cdmFunctions.R' )
+```
+
+With the functional code, the process is as summarised below.
+
+## Split Data
+Split the data into training/test parts, using `r input$trainPercent` percent as the data as training data. A summary of the training data is given below.
+
+```{r trainSummary, echo=FALSE}
+summary( dataRV$trainData[,input$xNames] )
+```
+
+For now, I've left out a summary of the test data.
+
+## Train
+
+While I've labelled this section as "Train", referring to fitting a regression model as "Training" is a bit unconventional. Nonetheless, we can make our neural network and linear regression models, based on a standard formula. 
+
+
+### Neural Network
+
+A neural network was trained via the neuralnet package. The net was trained on scaled training data, with 2 hidden layers with 5 and 3 nodes. A graphical representation of the net is included.
+```{r nnPlot, echo=FALSE}
+plot( modelRV$myNN )
+```
+
+### Linear Model
+
+A linear model was fit via the lm function. A summary of the results is included below.
+
+```{r lmSummary, echo=FALSE}
+summary( modelRV$myLM )
+```
+
+### Comparison
+
+A comparison of the observed versus predicted on the training data for the NN and LM algorithms is shown below.
+
+```{r trainPlot, echo=FALSE}
+plotsRV$trainLine
+```
+
+## Test
+
+It looks like the neural network performs quite well on the training data. We still need to consider the performance on the test data to ensure we haven't overfit.
+
+Employing these algorithms on test data, the diagnostic graph is below.
+
+```{r testReport, echo=FALSE}
+plotsRV$testLine
+```
+
+## Cross-Validation
+Finally, we can iterate the same process $N=10$ times, and compare the distribution of the MSE of the LM and NN models. Box-plots and a table of the MSE results are given below.
+
+```{r cvReport, echo=FALSE}
+plotsRV$cvBox
+
+knitr::kable( resultsRV$cvResults, digits=2, caption='MSE results from Cross-Validation of NN and LM', col.names=c('NN MSE', 'LM MSE'), row.names=TRUE, padding=4 )
+```

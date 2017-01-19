@@ -1,0 +1,109 @@
+---
+title: 'Citizens Data Meetup: High-level Documentation'
+author: "Craig (Doc) Savage"
+output: 
+  html_document: 
+    keep_md: yes
+    theme: null
+---
+
+```{r loadPackages, echo=FALSE}
+library( MASS )
+library( neuralnet )
+library( ggplot2 )
+library( RColorBrewer )
+```
+
+This documentation has been prepared as an example of informal documentation for the Citizens Data Meetup group presentation on 24 Jan in Melbourne, Australia. 
+
+The idea for this project and demonstration was a nice [blog entry](https://datascienceplus.com/fitting-neural-network-in-r/) on fitting a neural network with the neuralnet package by Michy Alice.
+
+The problem statement is the same -- compare the performance of a neural network to a linear regression model using the Boston data set in the MASS package. The Boston data set contains `r nrow(Boston)` entries with `r ncol( Boston )` variables. As in the above blog article, I've chosen to model the median house price as a function of the other variables.
+
+```{r dataDef}
+myData <- Boston
+dataNames <- names( myData )
+yName <- 'medv'
+xNames <- setdiff( dataNames, yName )
+```
+
+I've organised most of the technical details and arranged them into functions in a separate file, *cdmFunctions.R*. Some of them are rather involved, and I'd like to focus on the high-level process here.
+
+```{r sourceFunctions, echo=FALSE}
+source( '../baseCode/cdmFunctions.R' )
+```
+
+With the functional code, the process is as summarised below.
+
+## Split Data
+Split the data into training/test parts, using 75 percent as the data as training data. A summary of the training data is given below.
+
+```{r dataSplit, echo=TRUE}
+splitData <- makeSplitData( myData, trainPercent=75, splitSeed=100 )
+trainData <- scaleDF( splitData$trainData )
+testData <- scaleDF( splitData$testData, splitData$trainData)
+summary( splitData$trainData[,xNames] )
+```
+
+For now, I've left out a summary of the test data.
+
+## Train
+
+While I've labelled this section as "Train", referring to fitting a regression model as "Training" is a bit unconventional. Nonetheless, we can make our neural network and linear regression models, based on a standard formula. 
+
+```{r train, echo=FALSE}
+myFormula <- buildFormula( yName, xNames )
+```
+
+### Neural Network
+
+A neural network was trained via the neuralnet package. The net was trained on scaled training data, with 2 hidden layers with 5 and 3 nodes. 
+
+```{r nnPlot, echo=FALSE}
+myNN <- trainNN( trainData=trainData, nnFormula=myFormula, hiddenVec=c(5,3), nnSeed = 500 )
+```
+
+### Linear Model
+
+A linear model was fit via the lm function. A summary of the results is included below.
+
+```{r lmSummary, echo=FALSE}
+myLM <- trainLM( trainData, myFormula )
+summary( myLM )
+```
+
+### Comparison
+
+A comparison of the observed versus predicted on the training data for the NN and LM algorithms is shown below.
+
+```{r trainPlot, echo=FALSE}
+trainResults <- assessModels( trainData, xNames, yName, myNN, myLM
+                                 , unCentre=min( splitData$trainData[,yName] )
+                                 , unScale=max( splitData$trainData[,yName] )-min(splitData$trainData[,yName] ) 
+)
+makeLineGraph( trainResults )
+```
+
+
+## Test
+
+It looks like the neural network performs quite well on the training data. We still need to consider the performance on the test data to ensure we haven't overfit.
+
+Employing these algorithms on test data, the diagnostic graph is below.
+
+```{r testReport, echo=FALSE}
+testResults <- assessModels( testData, xNames, yName, myNN, myLM
+                                 , unCentre=min( splitData$trainData[,yName] )
+                                 , unScale=max(splitData$trainData[,yName] )-min(splitData$trainData[,yName] ) )
+makeLineGraph( testResults )
+```
+
+## Cross-Validation
+Finally, we can iterate the same process $N=10$ times, and compare the distribution of the MSE of the LM and NN models. Box-plots and a table of the MSE results are given below.
+
+```{r cvReport, echo=FALSE}
+N <- 10
+cvResults <- doCrossValidation( myData, xNames, yName, N=N, trainPercent=75, splitSeed=100, hiddenVec=c(5,3), nnSeed=500, includeInteractions=FALSE )
+makeBoxGraph( cvResults )
+knitr::kable( cvResults, digits=2, caption='MSE results from Cross-Validation of NN and LM', col.names=c('NN MSE', 'LM MSE'), row.names=TRUE )
+```
