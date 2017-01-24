@@ -70,4 +70,4 @@ plotsRV <- reactiveValues( trainLine=isolate( makeLineGraph( resultsRV$trainResu
                            , cvBox=NULL )
 
 # Documentation
-docRV <- reactiveValues( makeSlides=FALSE, updateIn=FALSE, reasons=NULL )
+docRV <- reactiveValues( makeSlides=FALSE, updateIn=FALSE, updateNumber=0, fileName='../Documentation/initialWriteUp.html', reasons=NULL )
